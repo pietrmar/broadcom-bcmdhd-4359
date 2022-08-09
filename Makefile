@@ -374,6 +374,10 @@ bcmdhd_usb:
 	$(warning "building BCMDHD_USB..........")
 	$(MAKE) -C $(LINUXDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules CONFIG_BCMDHD=m CONFIG_BCMDHD_USB=y
 
+modules_install:
+	$(warning "installing modules...........")
+	$(MAKE) -C $(LINUXDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules_install
+
 clean:
 	rm -rf *.o *.ko *.mod.c *~ .*.cmd *.o.cmd .*.o.cmd *.mod \
 	Module.symvers modules.order .tmp_versions modules.builtin
