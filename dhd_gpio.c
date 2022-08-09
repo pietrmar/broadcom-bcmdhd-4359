@@ -24,6 +24,8 @@ extern void *dhd_wlan_mem_prealloc(int section, unsigned long size);
 #endif /* CONFIG_DHD_USE_STATIC_BUF */
 
 #ifdef BCMDHD_DTS
+#include <linux/of_gpio.h>
+
 /* This is sample code in dts file.
 bcmdhd {
 	compatible = "android,bcmdhd_wlan";
