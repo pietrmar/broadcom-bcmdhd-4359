@@ -959,9 +959,9 @@ dhd_conf_set_nv_name_by_chip(dhd_pub_t *dhd, char *nv_path, int ag_type)
 	name_ptr = &nv_path[i];
 
 	row_chip = dhd_conf_match_chip(dhd, ag_type);
-	if (row_chip && strlen(row_chip->module_name)) {
+	if (row_chip && strlen(row_chip->chip_name)) {
 		strcpy(name_ptr, "nvram_");
-		strcat(name_ptr, row_chip->module_name);
+		strcat(name_ptr, row_chip->chip_name);
 #ifdef BCMUSBDEV_COMPOSITE
 		strcat(name_ptr, "_cusb");
 #endif
