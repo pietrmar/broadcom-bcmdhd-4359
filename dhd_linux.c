@@ -3071,8 +3071,20 @@ _dhd_set_mac_address(dhd_info_t *dhd, int ifidx, uint8 *addr, bool skip_stop)
 		goto exit;
 	} else {
 		dev_addr_set(dhd->iflist[ifidx]->net, addr);
-		if (ifidx == 0)
+		if (ifidx == 0) {
+			/*
+			 * If this is wlan0, then we write back the requested MAC address to
+			 * `iovar_mac`. The reason for this is that when putting the interface
+			 * down and up again, the firmware will be reset and the interface will
+			 * readback `cur_etheraddr` from the iovar, which will be the OTP one.
+			 * Instead we will have logic in place to check if `iovar_mac_set` is
+			 * true and then write the backed up `iovar_mac` to the firmware.
+			 */
+			memcpy(dhd->pub.iovar_mac.octet, addr, ETHER_ADDR_LEN);
+			dhd->pub.iovar_mac_set = true;
+
 			memcpy(dhd->pub.mac.octet, addr, ETHER_ADDR_LEN);
+		}
 		WL_MSG(dhd_ifname(&dhd->pub, ifidx), "MACID %pM is overwritten\n", addr);
 	}
 
@@ -14067,6 +14079,17 @@ dhd_optimised_preinit_ioctls(dhd_pub_t * dhd)
 	} else
 #endif /* GET_CUSTOM_MAC_ENABLE */
 	{
+		/*
+		 * If we had previously set a MAC address we want to restore it here into the firmware
+		 * before reading it back out below.
+		 */
+		if (dhd->iovar_mac_set) {
+			ret = dhd_iovar(dhd, 0, "cur_etheraddr", (char *)dhd->iovar_mac.octet,
+					ETHER_ADDR_LEN, NULL, 0, TRUE);
+			if (ret < 0)
+				DHD_ERROR(("%s: failed to write back cur_etheraddr to firmware\n", __FUNCTION__));
+		}
+
 		/* Get the default device MAC address directly from firmware */
 		ret = dhd_iovar(dhd, 0, "cur_etheraddr", NULL, 0, (char *)&buf, sizeof(buf), FALSE);
 		if (ret < 0) {
@@ -14975,6 +14998,17 @@ dhd_legacy_preinit_ioctls(dhd_pub_t *dhd)
 		goto done;
 	}
 #endif /* GET_CUSTOM_MAC_ENABLE */
+	/*
+	 * If we had previously set a MAC address we want to restore it here into the firmware
+	 * before reading it back out below.
+	 */
+	if (dhd->iovar_mac_set) {
+		ret = dhd_iovar(dhd, 0, "cur_etheraddr", (char *)dhd->iovar_mac.octet,
+				ETHER_ADDR_LEN, NULL, 0, TRUE);
+		if (ret < 0)
+			DHD_ERROR(("%s: failed to write back cur_etheraddr to firmware\n", __FUNCTION__));
+	}
+
 	/* Get the default device MAC address directly from firmware */
 	ret = dhd_iovar(dhd, 0, "cur_etheraddr", NULL, 0, (char *)&buf, sizeof(buf), FALSE);
 	if (ret < 0) {

@@ -1278,6 +1278,12 @@ typedef struct dhd_pub {
 	bool iswl;		/* Dongle-resident driver is wl */
 	ulong drv_version;	/* Version of dongle-resident driver */
 	struct ether_addr mac;	/* MAC address obtained from dongle */
+	/*
+	 * Used to track if a MAC address was set, if yes, re-write it to
+	 * the firmware upon bringing the wlan0 interface back up.
+	 */
+	struct ether_addr iovar_mac;
+	bool iovar_mac_set;
 	dngl_stats_t dstats;	/* Stats for dongle-based data */
 
 	/* Additional stats for the bus level */
