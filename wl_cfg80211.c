@@ -10521,11 +10521,17 @@ wl_cfg80211_set_country_code(struct net_device *net, char *country_code,
 	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
 	BCM_REFERENCE(cfg);
 
+#if 0
+	/*
+	 * A revinfo of -1 is still valid as it was in previous driver
+	 * versions, so not sure why the check was added here.
+	 */
 	if (revinfo < 0) {
 		WL_ERR(("country revinfo wrong : %d\n", revinfo));
 		ret = BCME_BADARG;
 		goto exit;
 	}
+#endif
 
 	if ((wl_is_ccode_change_required(net, country_code, revinfo) == false) &&
 		!dhd_force_country_change(net)) {
