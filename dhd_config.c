@@ -4742,6 +4742,7 @@ dhd_conf_postinit_ioctls(dhd_pub_t *dhd)
 {
 	struct dhd_conf *conf = dhd->conf;
 	char wl_preinit[] = "assoc_retry_max=10";
+	int error = -1;
 #ifdef NO_POWER_SAVE
 	char wl_no_power_save[] = "mpc=0, 86=0";
 	dhd_conf_set_wl_cmd(dhd, wl_no_power_save, FALSE);
@@ -4749,7 +4750,9 @@ dhd_conf_postinit_ioctls(dhd_pub_t *dhd)
 
 	dhd_conf_get_ioctl_ver(dhd);
 	dhd_conf_set_intiovar(dhd, 0, WLC_UP, "WLC_UP", 0, 0, FALSE);
-	dhd_conf_map_country_list(dhd, &conf->cspec);
+	error = dhd_conf_map_country_list(dhd, &conf->cspec);
+	if (error)
+		dhd_get_customized_country_code(dhd_idx2net(dhd, 0), conf->cspec.ccode, &conf->cspec);
 	dhd_conf_set_country(dhd, &conf->cspec);
 	dhd_conf_fix_country(dhd);
 	dhd_conf_get_country(dhd, &dhd->dhd_cspec);
