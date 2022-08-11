@@ -4909,14 +4909,12 @@ dhd_conf_preinit(dhd_pub_t *dhd)
 			conf->chip == BCM4345_CHIP_ID || conf->chip == BCM4371_CHIP_ID ||
 			conf->chip == BCM43569_CHIP_ID || conf->chip == BCM4359_CHIP_ID ||
 			conf->chip == BCM4375_CHIP_ID) {
-		strcpy(conf->cspec.country_abbrev, "CN");
-		strcpy(conf->cspec.ccode, "CN");
-		conf->cspec.rev = 38;
+		strcpy(conf->cspec.ccode, curr_alpha2);
+		conf->cspec.rev = -1;
 	}
 	else {
-		strcpy(conf->cspec.country_abbrev, "CN");
-		strcpy(conf->cspec.ccode, "CN");
-		conf->cspec.rev = 0;
+		strcpy(conf->cspec.ccode, curr_alpha2);
+		conf->cspec.rev = -1;
 	}
 	memset(&conf->channels, 0, sizeof(wl_channel_list_t));
 	conf->ioctl_ver = WLC_IOCTL_VERSION;

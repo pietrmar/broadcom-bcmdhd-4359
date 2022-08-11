@@ -10574,6 +10574,8 @@ exit:
 #define WL_CFG80211_REG_NOTIFIER() static void wl_cfg80211_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request)
 #endif /* kernel version < 3.9.0 */
 
+char curr_alpha2[3] = "00";
+
 WL_CFG80211_REG_NOTIFIER()
 {
 	struct bcm_cfg80211 *cfg = (struct bcm_cfg80211 *)wiphy_priv(wiphy);
@@ -10605,6 +10607,26 @@ WL_CFG80211_REG_NOTIFIER()
 	WL_ERR(("Set country code %c%c from %s\n",
 		request->alpha2[0], request->alpha2[1],
 		((request->initiator == NL80211_REGDOM_SET_BY_COUNTRY_IE) ? " 11d AP" : "User")));
+
+
+	/* Save requested alpha2 so that the driver can re-apply it after the
+	 * firmware has been flashed. This happens when reg_notifier is called
+	 * at probe time where the firmware is not yet flashed, or when the
+	 * interface is brought down and up again (which triggers a reflash of
+	 * the firmware). That way, any reg_notifier callback called while the
+	 * firmware is not running will be applied when bringing up the
+	 * interface.
+	 */
+	strlcpy(curr_alpha2, request->alpha2, 3);
+
+	/* reg_notifier can be called before cfg->wdev is set */
+	if (cfg->wdev == NULL || cfg->pub == NULL || cfg->pub->up == 0) {
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 11))
+		return ret;
+#else
+		return;
+#endif /* kernel version < 3.10.11 */
+	}
 	ret = wl_cfg80211_set_country_code(bcmcfg_to_prmry_ndev(cfg), request->alpha2, false,
 			(request->initiator == NL80211_REGDOM_SET_BY_USER ? true : false),
 			revinfo);
@@ -10909,6 +10931,8 @@ static s32 wl_setup_wiphy(struct wireless_dev *wdev, struct device *sdiofunc_dev
 	wiphy_ext_feature_set(wdev->wiphy, NL80211_EXT_FEATURE_HIGH_ACCURACY_SCAN);
 	wdev->wiphy->features |= NL80211_FEATURE_LOW_PRIORITY_SCAN;
 #endif /* WL_SCAN_TYPE */
+
+	wdev->wiphy->reg_notifier = wl_cfg80211_reg_notifier;
 
 	/* Now we can register wiphy with cfg80211 module */
 	err = wiphy_register(wdev->wiphy);
@@ -15934,8 +15958,6 @@ s32 wl_cfg80211_attach(struct net_device *ndev, void *context)
 #if defined(SUPPORT_RANDOM_MAC_SCAN)
 	cfg->random_mac_enabled = FALSE;
 #endif /* SUPPORT_RANDOM_MAC_SCAN */
-
-	wdev->wiphy->reg_notifier = wl_cfg80211_reg_notifier;
 
 #if defined(WL_ENABLE_P2P_IF) || defined (WL_NEWCFG_PRIVCMD_SUPPORT)
 	err = wl_cfg80211_attach_p2p(cfg);

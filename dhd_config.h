@@ -37,6 +37,8 @@ extern uint dhd_doflow;
 extern uint dhd_slpauto;
 #endif
 
+extern char curr_alpha2[3];
+
 #ifdef SET_FWNV_BY_MAC
 typedef struct wl_mac_range {
 	uint32 oui;
