@@ -10627,6 +10627,13 @@ WL_CFG80211_REG_NOTIFIER()
 
 	/* reg_notifier can be called before cfg->wdev is set */
 	if (cfg->wdev == NULL || cfg->pub == NULL || cfg->pub->up == 0) {
+		if (IS_REGDOM_SELF_MANAGED(wiphy)) {
+			/*
+			 * Update the Linux regdomain even if the interface is not up
+			 * for cosmetic purposes.
+			 */
+			wl_notify_regd(wiphy, curr_alpha2);
+		}
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 11))
 		return ret;
 #else
@@ -17082,8 +17089,9 @@ static s32 __wl_update_wiphybands(struct bcm_cfg80211 *cfg, bool notify)
 	if (notify) {
 		if (!IS_REGDOM_SELF_MANAGED(wiphy)) {
 			WL_UPDATE_CUSTOM_REGULATORY(wiphy);
-			wl_notify_regd(wiphy, NULL);
 		}
+
+		wl_notify_regd(wiphy, curr_alpha2);
 	}
 
 	return 0;
