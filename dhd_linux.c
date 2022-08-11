@@ -20790,6 +20790,15 @@ void dhd_get_customized_country_code(struct net_device *dev, char *country_iso_c
 		}
 	}
 #endif /* KEEP_JP_REGREV */
+
+	if (strncmp(country_iso_code, "", WLC_CNTRY_BUF_SZ) == 0 ||
+	    strncmp(country_iso_code, "00", WLC_CNTRY_BUF_SZ) == 0) {
+		strlcpy(country_iso_code, "XZ", WLC_CNTRY_BUF_SZ);
+		strlcpy(cspec->country_abbrev, country_iso_code, WLC_CNTRY_BUF_SZ);
+		strlcpy(cspec->ccode, country_iso_code, WLC_CNTRY_BUF_SZ);
+		DHD_ERROR(("%s: ccode change to %s\n", __FUNCTION__, country_iso_code));
+	}
+
 	BCM_REFERENCE(dhd);
 }
 
