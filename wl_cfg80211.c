@@ -13994,8 +13994,10 @@ wl_bss_connect_done(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 
 	if (completed) {
 		WL_MSG(ndev->name, "Report connect result - connection succeeded\n");
+		netif_carrier_on(ndev);
 	} else {
 		WL_MSG(ndev->name, "Report connect result - connection failed\n");
+		netif_carrier_off(ndev);
 #ifdef WL_EXT_IAPSTA
 		wl_ext_in4way_sync(ndev, STA_NO_BTC_IN4WAY, WL_EXT_STATUS_DISCONNECTED, NULL);
 #endif

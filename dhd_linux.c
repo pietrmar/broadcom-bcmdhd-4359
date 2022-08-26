@@ -9605,6 +9605,7 @@ dhd_pri_open(struct net_device *net)
 
 	DHD_MUTEX_IS_LOCK_RETURN();
 	DHD_MUTEX_LOCK();
+	netif_carrier_off(net);
 	ret = dhd_open(net);
 	if (unlikely(ret)) {
 		DHD_ERROR(("Failed to open primary dev ret %d\n", ret));
@@ -9646,6 +9647,7 @@ dhd_pri_stop(struct net_device *net)
 		return ret;
 	}
 
+	netif_carrier_off(net);
 	return ret;
 }
 
@@ -17580,6 +17582,7 @@ void dhd_detach(dhd_pub_t *dhdp)
 			dhd_monitor_uninit();
 		}
 	}
+	netif_carrier_off(dev);
 #endif
 
 #ifdef DHD_PCIE_NATIVE_RUNTIMEPM
